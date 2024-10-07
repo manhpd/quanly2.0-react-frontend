@@ -15,8 +15,41 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import { useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { register, handleSubmit } = useForm();
+  const [ error, setError ] = useState(null);
+  const [ authTokens, setAuthTokens ] = useState();
+  const [ email, setEmail ] = useState('');
+  const [ password, setPassword ] = useState('');
+
+  const onSubmit = async () => {
+    const data = {
+      email,
+      password,
+    };
+    const response = await fetch('http://localhost:3001/api/v1/auth/email/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      setAuthTokens(result);
+      navigate('/');
+    } else {
+      setError('Invalid username or password');
+    }
+  };
+
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
@@ -25,38 +58,39 @@ const Login = () => {
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
-                  <CForm>
-                    <h1>Login</h1>
-                    <p className="text-body-secondary">Sign In to your account</p>
-                    <CInputGroup className="mb-3">
-                      <CInputGroupText>
-                        <CIcon icon={cilUser} />
-                      </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
-                    </CInputGroup>
-                    <CInputGroup className="mb-4">
-                      <CInputGroupText>
-                        <CIcon icon={cilLockLocked} />
-                      </CInputGroupText>
-                      <CFormInput
-                        type="password"
-                        placeholder="Password"
-                        autoComplete="current-password"
-                      />
-                    </CInputGroup>
-                    <CRow>
-                      <CCol xs={6}>
-                        <CButton color="primary" className="px-4">
-                          Login
-                        </CButton>
-                      </CCol>
-                      <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
-                          Forgot password?
-                        </CButton>
-                      </CCol>
-                    </CRow>
-                  </CForm>
+                    <CForm onSubmit={handleSubmit(onSubmit)}>
+                      <h1>Login</h1>
+                      <p className="text-body-secondary">Sign In to your account</p>
+                      <CInputGroup className="mb-3">
+                        <CInputGroupText>
+                          <CIcon icon={cilUser} />
+                        </CInputGroupText>
+                        <CFormInput placeholder="Email" autoComplete="email" type="email" onChange={(e) => setEmail(e.target.value)} />
+                      </CInputGroup>
+                      <CInputGroup className="mb-4">
+                        <CInputGroupText>
+                          <CIcon icon={cilLockLocked} />
+                        </CInputGroupText>
+                        <CFormInput
+                          type="password"
+                          placeholder="Password"
+                          autoComplete="current-password"
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </CInputGroup>
+                      <CRow>
+                        <CCol xs={6}>
+                          <CButton color="primary" className="px-4" type="submit">
+                            Login
+                          </CButton>
+                        </CCol>
+                        <CCol xs={6} className="text-right">
+                          <CButton color="link" className="px-0">
+                            Forgot password?
+                          </CButton>
+                        </CCol>
+                      </CRow>
+                    </CForm>
                 </CCardBody>
               </CCard>
               <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
